@@ -2,6 +2,8 @@
 
 https://www.kaggle.com/c/m5-forecasting-accuracy
 
+https://mofc.unic.ac.cy/m5-competition/
+
 This repository depends on the [AlignmentRepaC repository](https://github.com/caiks/AlignmentRepaC). The AlignmentRepaC repository is a fast C++ implementation of some of the *practicable inducers* described in the paper *The Theory and Practice of Induction by Alignment* at https://greenlake.co.uk/. 
 
 ## Download
@@ -18,15 +20,12 @@ git clone https://github.com/caiks/M5FA.git
 git clone https://github.com/caiks/M5FA_ws.git
 
 ```
-Then download the dataset files to a workspace, 
+Then download the dataset files `m5-forecasting-accuracy.zip` at https://www.kaggle.com/c/m5-forecasting-accuracy/data to the workspace, 
 ```
 cd M5FA_ws
-wget http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz
-wget http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz
-wget http://yann.lecun.com/exdb/mnist/t10k-images-idx3-ubyte.gz
-wget http://yann.lecun.com/exdb/mnist/t10k-labels-idx1-ubyte.gz
-gunzip *.gz
-cd ..
+ls -l *.csv
+
+head *.csv
 
 ```
 
@@ -46,8 +45,8 @@ make
 Ubuntu -
 ```sh
 cd ../M5FA_ws
-ln -s ../M5FA_build/M5FA M5FA
+ln -s ../M5FA_build/main main
 export PATH=$PATH:./
-/usr/bin/time -v M5FA induce model112 >model112.log 2>&1
+main
 
 ```

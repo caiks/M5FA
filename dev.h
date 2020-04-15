@@ -27,26 +27,19 @@
 
 namespace M5FA
 {
-	struct Bitmap
-	{
-		Bitmap(int h = 1, int w = 1, unsigned char x = 0) {
-			height = h;
-			width = w;
-			image.resize(h*w*3,x);
-		}
-		int height;
-		int width;
-		std::vector<unsigned char> image;
-	};
+    struct Record
+    {
+		std::string id;
+		std::string item_id;
+		std::string dept_id;
+		std::string cat_id;
+		std::string store_id;
+		std::string state_id;
+		std::vector<int> d;
+    };
+    typedef std::vector<Record> RecordList;
 
-	Bitmap bminsert(const Bitmap&, int, int, const Bitmap&);
-	Bitmap bmborder(int, const Bitmap&);
-	Bitmap bmhstack(const std::vector<Bitmap>&);
-	Bitmap bmvstack(const std::vector<Bitmap>&);
 
-	void bmwrite(std::string, const Bitmap&);
-
-	Bitmap hrbm(int,int,int,const Alignment::HistoryRepa&);
 
 
 	typedef std::tuple<std::unique_ptr<Alignment::System>, std::unique_ptr<Alignment::SystemRepa>, std::unique_ptr<Alignment::HistoryRepa>> SystemHistoryRepaTuple;
