@@ -14,11 +14,54 @@ typedef std::chrono::high_resolution_clock clk;
 
 int main(int argc, char **argv)
 {
-	if (argc >= 2 && string(argv[1]) == "sales")
+	if (argc == 2 && string(argv[1]) == "sales")
 	{
 		auto records = recordSalesListIO();
 		EVAL(*records);
 	}
+
+	if (argc >= 3 && string(argv[1]) == "sales_buckets")
+	{
+		int buckets = atoi(argv[2]);
+		auto records = recordSalesListIO();
+		RecordSalesList records1;
+		for (auto& record : *records)
+		{ 
+			RecordSales record1(record);
+			record1.d.clear();
+			std::sort(record.d.begin(), record.d.end());
+			record1.d.push_back(record.d.front());
+			for (int i = 0; i < buckets; i++)
+				record1.d.push_back(record.d[i * record.d.size() / buckets]);
+			record1.d.push_back(record.d.back());
+			auto last = std::unique(record1.d.begin(), record1.d.end());
+			record1.d.erase(last, record1.d.end());
+			records1.push_back(record1);
+		}
+		EVAL(records1);
+	}
+
+	if (argc == 2 && string(argv[1]) == "sales_counts")
+	{
+		int buckets = atoi(argv[2]);
+		auto records = recordSalesListIO();
+		RecordSalesList records1;
+		for (auto& record : *records)
+		{
+			RecordSales record1(record);
+			record1.d.clear();
+			std::sort(record.d.begin(), record.d.end());
+			record1.d.push_back(record.d.front());
+			for (int i = 0; i < buckets; i++)
+				record1.d.push_back(record.d[i * record.d.size() / buckets]);
+			record1.d.push_back(record.d.back());
+			auto last = std::unique(record1.d.begin(), record1.d.end());
+			record1.d.erase(last, record1.d.end());
+			records1.push_back(record1);
+		}
+		EVAL(records1);
+	}
+
 	// if (false)
 	// {
 		// const int a = 28;

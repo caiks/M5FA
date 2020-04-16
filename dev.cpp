@@ -17,12 +17,11 @@ std::ostream& operator<<(std::ostream& out, const RecordSales& r)
 		<< "," << r.dept_id
 		<< "," << r.cat_id
 		<< "," << r.store_id
-		<< "," << r.item_id 
 		<< "," << r.state_id 
 		<< ",(";
     for (std::size_t i = 0; i < r.d.size(); i++)
 		out << (i ? "," : "") << r.d[i];
-    out << ")";
+    out << "))";
     return out;
 }
 
