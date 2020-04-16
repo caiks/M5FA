@@ -27,7 +27,7 @@
 
 namespace M5FA
 {
-    struct Record
+    struct RecordSales
     {
 		std::string id;
 		std::string item_id;
@@ -37,26 +37,28 @@ namespace M5FA
 		std::string state_id;
 		std::vector<int> d;
     };
-    typedef std::vector<Record> RecordList;
+    typedef std::vector<RecordSales> RecordSalesList;
+	
+	std::unique_ptr<RecordSalesList> recordSalesListIO();
 
+	// typedef std::tuple<std::unique_ptr<Alignment::System>, std::unique_ptr<Alignment::SystemRepa>, std::unique_ptr<Alignment::HistoryRepa>> SystemHistoryRepaTuple;
 
+	// // trainBucketedIO :: Int -> IO (System, HistoryRepa)
+	// SystemHistoryRepaTuple trainBucketedIO(int);
 
+	// // trainBucketedAffineIO :: Int -> Int -> Double -> Int -> IO (System, HistoryRepa)
+	// SystemHistoryRepaTuple trainBucketedAffineIO(int, int, double, int);
 
-	typedef std::tuple<std::unique_ptr<Alignment::System>, std::unique_ptr<Alignment::SystemRepa>, std::unique_ptr<Alignment::HistoryRepa>> SystemHistoryRepaTuple;
+	// // trainBucketedIO :: Int -> IO (System, HistoryRepa)
+	// SystemHistoryRepaTuple trainBucketedRegionRandomIO(int,int,int);
 
-	// trainBucketedIO :: Int -> IO (System, HistoryRepa)
-	SystemHistoryRepaTuple trainBucketedIO(int);
-
-	// trainBucketedAffineIO :: Int -> Int -> Double -> Int -> IO (System, HistoryRepa)
-	SystemHistoryRepaTuple trainBucketedAffineIO(int, int, double, int);
-
-	// trainBucketedIO :: Int -> IO (System, HistoryRepa)
-	SystemHistoryRepaTuple trainBucketedRegionRandomIO(int,int,int);
-
-	// testBucketedIO :: Int -> IO (System, HistoryRepa)
-	SystemHistoryRepaTuple testBucketedIO(int);
+	// // testBucketedIO :: Int -> IO (System, HistoryRepa)
+	// SystemHistoryRepaTuple testBucketedIO(int);
 
 }
+
+std::ostream& operator<<(std::ostream& out, const M5FA::RecordSales&);
+std::ostream& operator<<(std::ostream& out, const M5FA::RecordSalesList&);
 
 
 #endif

@@ -47,6 +47,6 @@ Ubuntu -
 cd ../M5FA_ws
 ln -s ../M5FA_build/main main
 export PATH=$PATH:./
-main
+./main
 
 ```
