@@ -80,285 +80,67 @@ std::unique_ptr<RecordSalesList> M5FA::recordSalesListIO()
 	return records;
 }
 
-// // trainBucketedAffineIO :: Int -> Int -> Double -> Int -> IO (System, HistoryRepa)
-// SystemHistoryRepaTuple M5FA::trainBucketedAffineIO(int d, int r, double af, int s)
-// {
-	// auto lluu = listsSystem_u;
-	// auto uuur = systemsSystemRepa;
+SystemHistoryRepaTuple M5FA::trainBucketedCategoryStoreIO(int d, std::string cat_id, std::string store_id)
+{
+	auto lluu = listsSystem_u;
+	auto uuur = systemsSystemRepa;
 
-	// const int a = 28;
-	// const int z = 60000;
-	// unsigned char* images = new unsigned char[z*a*a];
-	// unsigned char* labels = new unsigned char[z];
-	// try
-	// {
-		// ifstream fimages("train-images-idx3-ubyte", ios::binary);
-		// ifstream flabels("train-labels-idx1-ubyte", ios::binary);
-		// if (!fimages.is_open() || !flabels.is_open())
-		// {
-			// cout << "trainBucketedIO : cannot open files" << endl;
-			// delete[] images;
-			// delete[] labels;
-			// return SystemHistoryRepaTuple();
-		// }
-		// fimages.read((char*)images, 16);
-		// fimages.read((char*)images, z*a*a);
-		// fimages.close();
-		// flabels.read((char*)labels, 8);
-		// flabels.read((char*)labels, z);
-		// flabels.close();
-	// }
-	// catch (const exception& e)
-	// {
-		// cout << "trainBucketedIO : " << e.what() << endl;
-		// delete[] images;
-		// delete[] labels;
-		// return SystemHistoryRepaTuple();
-	// }
-	// ValSet digits;
-	// for (int i = 0; i < 10; i++)
-		// digits.insert(Value(i));
-	// ValSet buckets;
-	// for (int i = 0; i < d; i++)
-		// buckets.insert(Value(i));
-	// vector<VarValSetPair> ll;
-	// ll.push_back(VarValSetPair(Variable("digit"), digits));
-	// for (int i = 0; i < a; i++)
-		// for (int j = 0; j < a; j++)
-			// ll.push_back(VarValSetPair(Variable(Variable(i + 1), Variable(j + 1)), buckets));
-	// auto uu = lluu(ll);
-	// auto ur = uuur(*uu);
-	// auto hr = make_unique<HistoryRepa>();
-	// hr->dimension = a*a + 1;
-	// auto n = hr->dimension;
-	// hr->vectorVar = new size_t[n];
-	// auto vv = hr->vectorVar;
-	// hr->shape = new size_t[n];
-	// auto sh = hr->shape;
-	// hr->size = r*z;
-	// hr->evient = true;
-	// hr->arr = new unsigned char[r*z*n];
-	// auto rr = hr->arr;
-	// for (size_t i = 0; i < n; i++)
-		// vv[i] = i;
-	// sh[0] = 10;
-	// for (size_t i = 1; i < n; i++)
-		// sh[i] = d;
-	// size_t k = 0;
-	// for (size_t j = 0; j < z; j++)
-	// {
-		// size_t jn = j*n;
-		// rr[jn] = labels[j];
-		// for (size_t i = 1; i < n; i++)
-		// {
-			// rr[jn + i] = images[k];
-			// k++;
-		// }
-	// }
-	// mt19937 gen(s); 
-	// uniform_real_distribution<> dis(-af, af);
-	// for (size_t j = z; j < r*z; j++)
-	// {
-		// size_t jn = j*n;
-		// rr[jn] = rr[(j%z)*n];
-		// double afw = dis(gen);
-		// double afa = dis(gen);
-		// double afb = dis(gen);
-		// double afh = dis(gen);
-		// for (int x = 0; x < a; x++)
-			// for (int y = 0; y < a; y++)
-			// {
-				// double x1 = (1.0+afw)*(x-a/2) + afa*(y-a/2) + a/2;
-				// double y1 = afb*(x-a/2) + (1.0+afh)*(y-a/2) + a/2;
-				// double a1 = (int)floor(x1) < 0 || (int)floor(x1) >= a || (int)floor(y1) < 0 || (int)floor(y1) >= a ? 0.0 : (double)rr[(j%z)*n + 1 + a*(int)floor(x1) + (int)floor(y1)];
-				// double a2 = (int)ceil(x1) < 0 || (int)ceil(x1) >= a || (int)floor(y1) < 0 || (int)floor(y1) >= a ? 0.0 : (double)rr[(j%z)*n + 1 + a*(int)ceil(x1) + (int)floor(y1)];
-				// double a3 = (int)floor(x1) < 0 || (int)floor(x1) >= a || (int)ceil(y1) < 0 || (int)ceil(y1) >= a ? 0.0 : (double)rr[(j%z)*n + 1 + a*(int)floor(x1) + (int)ceil(y1)];
-				// double a4 = (int)ceil(x1) < 0 || (int)ceil(x1) >= a || (int)ceil(y1) < 0 || (int)ceil(y1) >= a ? 0.0 : (double)rr[(j%z)*n + 1 + a*(int)ceil(x1) + (int)ceil(y1)];
-				// double dx = x1 - floor(x1);
-				// double dy = y1 - floor(y1);
-				// double a5 = a1*(1.0-dx) + a2*dx;
-				// double a6 = a3*(1.0-dx) + a4*dx;
-				// double a7 = a5*(1.0-dy) + a6*dy;
-				// if (a7 < 0.0)
-					// a7 = 0.0;
-				// if (a7 > 255.0)
-					// a7 = 255.0;
-				// rr[jn + 1 + a*x + y] = (int)a7;
-			// }
-	// }
-	// for (size_t j = 0; j < r*z; j++)
-	// {
-		// size_t jn = j*n;
-		// for (size_t i = 1; i < n; i++)
-				// rr[jn + i] = rr[jn + i] * d / 256;
-	// }
-	// hr->transpose();
-	// delete[] images;
-	// delete[] labels;
-	// return SystemHistoryRepaTuple(move(uu), move(ur), move(hr));
-// }
+	auto records = recordSalesListIO();
+	std::vector<VarValSetPair> ll;
+	RecordSalesList records1;
+	std::vector<std::vector<int>> listBuckets;
+	for (auto& record : *records)
+		if (record.cat_id == cat_id && record.store_id == store_id)
+		{
+			records1.push_back(record);
+			std::vector<int> buckets;
+			RecordSales record1(record);
+			std::sort(record1.d.begin(), record1.d.end());
+			for (int i = 0; i < d; i++)
+				buckets.push_back(record1.d[i * record1.d.size() / d]);
+			buckets.push_back(record1.d.back());
+			auto last = std::unique(buckets.begin(), buckets.end());
+			buckets.erase(last, buckets.end());
+			listBuckets.push_back(buckets);
+			ValSet valSetBuckets;
+			for (int i = 0; i < buckets.size(); i++)
+				valSetBuckets.insert(Value(i));
+			ll.push_back(VarValSetPair(Variable(record.id), valSetBuckets));
+		}
+	auto uu = lluu(ll);
+	auto ur = uuur(*uu);
+	auto hr = make_unique<HistoryRepa>();
+	hr->dimension = records1.size();
+	auto n = hr->dimension;
+	hr->vectorVar = new size_t[n];
+	auto vv = hr->vectorVar;
+	hr->shape = new size_t[n];
+	auto sh = hr->shape;
+	size_t z = records1.front().d.size();
+	hr->size = z;
+	hr->evient = false;
+	hr->arr = new unsigned char[n * z];
+	auto rr = hr->arr;
+	for (size_t i = 0; i < n; i++)
+	{
+		vv[i] = i;
+		sh[i] = listBuckets[i].size();
+	}
+	for (size_t i = 0; i < n; i++)
+	{
+		auto record = records1[i];
+		auto buckets = listBuckets[i];
+		size_t iz = i * z;
+		for (size_t j = 0; j < z; j++)
+			for (size_t k = 0; k < buckets.size(); k++)
+				if (record.d[j] <= buckets[k])
+				{
+					rr[iz + j] = (unsigned char)k;
+					break;
+				}
+	}
+	return SystemHistoryRepaTuple(move(uu), move(ur), move(hr));
+}
 
 
-
-// // trainBucketedRegionRandomIO :: Int -> Int -> Int -> IO (System, HistoryRepa)
-// SystemHistoryRepaTuple M5FA::trainBucketedRegionRandomIO(int d, int b, int s)
-// {
-	// auto lluu = listsSystem_u;
-	// auto uuur = systemsSystemRepa;
-
-	// const int a = 28;
-	// const int z = 60000;
-	// unsigned char* images = new unsigned char[z*a*a];
-	// unsigned char* labels = new unsigned char[z];
-	// try
-	// {
-		// ifstream fimages("train-images-idx3-ubyte", ios::binary);
-		// ifstream flabels("train-labels-idx1-ubyte", ios::binary);
-		// if (!fimages.is_open() || !flabels.is_open())
-		// {
-			// cout << "trainBucketedIO : cannot open files" << endl;
-			// delete[] images;
-			// delete[] labels;
-			// return SystemHistoryRepaTuple();
-		// }
-		// fimages.read((char*)images, 16);
-		// fimages.read((char*)images, z*a*a);
-		// fimages.close();
-		// flabels.read((char*)labels, 8);
-		// flabels.read((char*)labels, z);
-		// flabels.close();
-	// }
-	// catch (const exception& e)
-	// {
-		// cout << "trainBucketedIO : " << e.what() << endl;
-		// delete[] images;
-		// delete[] labels;
-		// return SystemHistoryRepaTuple();
-	// }
-	// ValSet digits;
-	// for (int i = 0; i < 10; i++)
-		// digits.insert(Value(i));
-	// ValSet buckets;
-	// for (int i = 0; i < d; i++)
-		// buckets.insert(Value(i));
-	// vector<VarValSetPair> ll;
-	// ll.push_back(VarValSetPair(Variable("digit"), digits));
-	// for (int i = 0; i < b; i++)
-		// for (int j = 0; j < b; j++)
-			// ll.push_back(VarValSetPair(Variable(Variable(i + 1), Variable(j + 1)), buckets));
-	// auto uu = lluu(ll);
-	// auto ur = uuur(*uu);
-	// auto hr = make_unique<HistoryRepa>();
-	// hr->dimension = b*b + 1;
-	// auto n = hr->dimension;
-	// hr->vectorVar = new size_t[n];
-	// auto vv = hr->vectorVar;
-	// hr->shape = new size_t[n];
-	// auto sh = hr->shape;
-	// hr->size = z;
-	// hr->evient = true;
-	// hr->arr = new unsigned char[z*n];
-	// auto rr = hr->arr;
-	// for (size_t i = 0; i < n; i++)
-		// vv[i] = i;
-	// sh[0] = 10;
-	// for (size_t i = 1; i < n; i++)
-		// sh[i] = d;
-	// srand(s);
-	// for (size_t j = 0; j < z; j++)
-	// {
-		// auto ox = rand() % (a-b+1);
-		// auto oy = rand() % (a-b+1);
-		// rr[j*n] = labels[j];
-		// for (size_t ix = 0; ix < b; ix++)
-			// for (size_t iy = 0; iy < b; iy++)
-				// rr[j*n + 1 + ix*b + iy] = images[j*a*a + (ox+ix)*a + oy + iy] * d / 256;
-	// }
-	// hr->transpose();
-	// delete[] images;
-	// delete[] labels;
-	// return SystemHistoryRepaTuple(move(uu), move(ur), move(hr));
-// }
-
-
-// // testBucketedIO :: Int -> IO (System, HistoryRepa)
-// SystemHistoryRepaTuple M5FA::testBucketedIO(int d)
-// {
-	// auto lluu = listsSystem_u;
-	// auto uuur = systemsSystemRepa;
-
-	// const int a = 28;
-	// const int z = 10000;
-	// unsigned char* images = new unsigned char[z*a*a];
-	// unsigned char* labels = new unsigned char[z];
-	// try
-	// {
-		// ifstream fimages("t10k-images-idx3-ubyte", ios::binary);
-		// ifstream flabels("t10k-labels-idx1-ubyte", ios::binary);
-		// if (!fimages.is_open() || !flabels.is_open())
-		// {
-			// cout << "testBucketedIO : cannot open files" << endl;
-			// delete[] images;
-			// delete[] labels;
-			// return SystemHistoryRepaTuple();
-		// }
-		// fimages.read((char*)images, 16);
-		// fimages.read((char*)images, z*a*a);
-		// fimages.close();
-		// flabels.read((char*)labels, 8);
-		// flabels.read((char*)labels, z);
-		// flabels.close();
-	// }
-	// catch (const exception& e)
-	// {
-		// cout << "testBucketedIO : " << e.what() << endl;
-		// delete[] images;
-		// delete[] labels;
-		// return SystemHistoryRepaTuple();
-	// }
-	// ValSet digits;
-	// for (int i = 0; i < 10; i++)
-		// digits.insert(Value(i));
-	// ValSet buckets;
-	// for (int i = 0; i < d; i++)
-		// buckets.insert(Value(i));
-	// vector<VarValSetPair> ll;
-	// ll.push_back(VarValSetPair(Variable("digit"), digits));
-	// for (int i = 0; i < a; i++)
-		// for (int j = 0; j < a; j++)
-			// ll.push_back(VarValSetPair(Variable(Variable(i + 1), Variable(j + 1)), buckets));
-	// auto uu = lluu(ll);
-	// auto ur = uuur(*uu);
-	// auto hr = make_unique<HistoryRepa>();
-	// hr->dimension = a*a + 1;
-	// auto n = hr->dimension;
-	// hr->vectorVar = new size_t[n];
-	// auto vv = hr->vectorVar;
-	// hr->shape = new size_t[n];
-	// auto sh = hr->shape;
-	// hr->size = z;
-	// hr->evient = true;
-	// hr->arr = new unsigned char[z*n];
-	// auto rr = hr->arr;
-	// for (size_t i = 0; i < n; i++)
-		// vv[i] = i;
-	// sh[0] = 10;
-	// for (size_t i = 1; i < n; i++)
-		// sh[i] = d;
-	// size_t k = 0;
-	// for (size_t j = 0; j < z; j++)
-	// {
-		// size_t jn = j*n;
-		// rr[jn] = labels[j];
-		// for (size_t i = 1; i < n; i++)
-		// {
-			// rr[jn + i] = images[k] * d / 256;
-			// k++;
-		// }
-	// }
-	// hr->transpose();
-	// delete[] images;
-	// delete[] labels;
-	// return SystemHistoryRepaTuple(move(uu), move(ur), move(hr));
-// }
 
