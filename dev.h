@@ -27,8 +27,8 @@
 
 namespace M5FA
 {
-    struct RecordSales
-    {
+	struct RecordSales
+	{
 		std::string id;
 		std::string item_id;
 		std::string dept_id;
@@ -36,8 +36,8 @@ namespace M5FA
 		std::string store_id;
 		std::string state_id;
 		std::vector<int> d;
-    };
-    typedef std::vector<RecordSales> RecordSalesList;
+	};
+	typedef std::vector<RecordSales> RecordSalesList;
 	
 	std::unique_ptr<RecordSalesList> recordSalesListIO();
 

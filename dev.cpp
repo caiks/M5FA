@@ -12,24 +12,24 @@ using namespace std;
 
 std::ostream& operator<<(std::ostream& out, const RecordSales& r)
 {
-    out << "(" << r.id 
+	out << "(" << r.id 
 		<< "," << r.item_id 
 		<< "," << r.dept_id
 		<< "," << r.cat_id
 		<< "," << r.store_id
 		<< "," << r.state_id 
 		<< ",(";
-    for (std::size_t i = 0; i < r.d.size(); i++)
+	for (std::size_t i = 0; i < r.d.size(); i++)
 		out << (i ? "," : "") << r.d[i];
-    out << "))";
-    return out;
+	out << "))";
+	return out;
 }
 
 std::ostream& operator<<(std::ostream& out, const RecordSalesList& rr)
 {
-    for (auto& r : rr)
+	for (auto& r : rr)
 		out << r << std::endl;
-    return out;
+	return out;
 }
 
 std::unique_ptr<RecordSalesList> M5FA::recordSalesListIO()
@@ -49,12 +49,12 @@ std::unique_ptr<RecordSalesList> M5FA::recordSalesListIO()
 		{
 			//EVAL(line);
 			std::stringstream lineStream(line);
-            std::string cell;
+			std::string cell;
 			std::vector<std::string> vec;
-            while(std::getline(lineStream, cell, ','))
-                vec.push_back(cell);
-            if (!lineStream && cell.empty())
-                vec.push_back("");
+			while(std::getline(lineStream, cell, ','))
+				vec.push_back(cell);
+			if (!lineStream && cell.empty())
+				vec.push_back("");
 			if (vec.size() < 7)
 			{
 				cout << "recordSalesListIO : vec too small : " << vec.size() << endl;
