@@ -41,7 +41,7 @@ namespace M5FA
 	
 	std::unique_ptr<RecordSalesList> recordSalesListIO();
 
-	 typedef std::tuple<std::unique_ptr<Alignment::System>, std::unique_ptr<Alignment::SystemRepa>, std::unique_ptr<Alignment::HistoryRepa>> SystemHistoryRepaTuple;
+	 typedef std::tuple<std::unique_ptr<Alignment::System>, std::unique_ptr<Alignment::SystemRepa>, std::unique_ptr<Alignment::HistoryRepa>, std::unique_ptr<RecordSalesList>> SystemHistoryRepaTuple;
 
 	 SystemHistoryRepaTuple trainBucketedCategoryStoreIO(int, std::string, std::string);
 

@@ -87,12 +87,12 @@ SystemHistoryRepaTuple M5FA::trainBucketedCategoryStoreIO(int d, std::string cat
 
 	auto records = recordSalesListIO();
 	std::vector<VarValSetPair> ll;
-	RecordSalesList records1;
+	auto records1 = std::make_unique<RecordSalesList>();
 	std::vector<std::vector<int>> listBuckets;
 	for (auto& record : *records)
 		if (record.cat_id == cat_id && record.store_id == store_id)
 		{
-			records1.push_back(record);
+			records1->push_back(record);
 			std::vector<int> buckets;
 			RecordSales record1(record);
 			std::sort(record1.d.begin(), record1.d.end());
@@ -110,13 +110,13 @@ SystemHistoryRepaTuple M5FA::trainBucketedCategoryStoreIO(int d, std::string cat
 	auto uu = lluu(ll);
 	auto ur = uuur(*uu);
 	auto hr = make_unique<HistoryRepa>();
-	hr->dimension = records1.size();
+	hr->dimension = records1->size();
 	auto n = hr->dimension;
 	hr->vectorVar = new size_t[n];
 	auto vv = hr->vectorVar;
 	hr->shape = new size_t[n];
 	auto sh = hr->shape;
-	size_t z = records1.front().d.size();
+	size_t z = records1->front().d.size();
 	hr->size = z;
 	hr->evient = false;
 	hr->arr = new unsigned char[n * z];
@@ -128,7 +128,7 @@ SystemHistoryRepaTuple M5FA::trainBucketedCategoryStoreIO(int d, std::string cat
 	}
 	for (size_t i = 0; i < n; i++)
 	{
-		auto record = records1[i];
+		auto record = (*records1)[i];
 		auto buckets = listBuckets[i];
 		size_t iz = i * z;
 		for (size_t j = 0; j < z; j++)
@@ -139,7 +139,7 @@ SystemHistoryRepaTuple M5FA::trainBucketedCategoryStoreIO(int d, std::string cat
 					break;
 				}
 	}
-	return SystemHistoryRepaTuple(move(uu), move(ur), move(hr));
+	return SystemHistoryRepaTuple(move(uu), move(ur), move(hr), move(records1));
 }
 
 
