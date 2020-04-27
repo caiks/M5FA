@@ -95,6 +95,7 @@ int main(int argc, char **argv)
 	if (argc >= 5 && string(argv[1]) == "induce_category_store")
 	{
 		auto uvars = systemsSetVar;
+		auto hrsel = eventsHistoryRepasHistoryRepaSelection_u;
 		auto frvars = fudRepasSetVar;
 		auto frder = fudRepasDerived;
 		auto frund = fudRepasUnderlying;
@@ -103,13 +104,23 @@ int main(int argc, char **argv)
 		string model = string(argv[2]);
 		string cat_id = string(argv[3]);
 		string store_id = string(argv[4]);
+		size_t scale = argc >= 6 ? atoi(argv[5]) : 1;
 
 		auto xx = trainBucketedCategoryStoreIO(10, cat_id, store_id);
 		auto& uu = std::get<0>(xx);
 		auto& ur = std::get<1>(xx);
-		auto& hr = std::get<2>(xx);
+		auto& hr0 = std::get<2>(xx);
 
 		auto vv = *uvars(*uu);
+		
+		std::unique_ptr<HistoryRepa> hr;
+		{
+			SizeList ll;
+			for (size_t j = 0; j < scale; j++)
+				for (size_t i = 0; i < hr0->size; i++)
+					ll.push_back(i);
+			hr = hrsel(ll.size(), ll.data(), *hr0);
+		}
 
 		EVAL(hr->dimension);
 		EVAL(hr->size);
@@ -195,6 +206,7 @@ int main(int argc, char **argv)
 	if (argc >= 5 && string(argv[1]) == "induce_category_store3")
 	{
 		auto uvars = systemsSetVar;
+		auto hrsel = eventsHistoryRepasHistoryRepaSelection_u;
 		auto frvars = fudRepasSetVar;
 		auto frder = fudRepasDerived;
 		auto frund = fudRepasUnderlying;
@@ -203,13 +215,23 @@ int main(int argc, char **argv)
 		string model = string(argv[2]);
 		string cat_id = string(argv[3]);
 		string store_id = string(argv[4]);
+		size_t scale = argc >= 6 ? atoi(argv[5]) : 1;
 
 		auto xx = trainBucketedCategoryStoreIO(10, cat_id, store_id);
 		auto& uu = std::get<0>(xx);
 		auto& ur = std::get<1>(xx);
-		auto& hr = std::get<2>(xx);
+		auto& hr0 = std::get<2>(xx);
 
 		auto vv = *uvars(*uu);
+		
+		std::unique_ptr<HistoryRepa> hr;
+		{
+			SizeList ll;
+			for (size_t j = 0; j < scale; j++)
+				for (size_t i = 0; i < hr0->size; i++)
+					ll.push_back(i);
+			hr = hrsel(ll.size(), ll.data(), *hr0);
+		}
 
 		EVAL(hr->dimension);
 		EVAL(hr->size);
@@ -294,6 +316,7 @@ int main(int argc, char **argv)
 	if (argc >= 5 && string(argv[1]) == "model_error_category_store")
 	{
 		auto uvars = systemsSetVar;
+		auto hrsel = eventsHistoryRepasHistoryRepaSelection_u;
 		auto hrred = setVarsHistoryRepasReduce_u;
 		auto frmul = historyRepasFudRepasMultiply_u;
 		auto frvars = fudRepasSetVar;
@@ -303,14 +326,24 @@ int main(int argc, char **argv)
 		string model = string(argv[2]);
 		string cat_id = string(argv[3]);
 		string store_id = string(argv[4]);
+		size_t scale = argc >= 6 ? atoi(argv[5]) : 1;
 
 		auto xx = trainBucketedCategoryStoreIO(10, cat_id, store_id);
 		auto& uu = std::get<0>(xx);
 		auto& ur = std::get<1>(xx);
-		auto& hr = std::get<2>(xx);
+		auto& hr0 = std::get<2>(xx);
 		auto& records = std::get<3>(xx);
 
 		auto vv = *uvars(*uu);
+		
+		std::unique_ptr<HistoryRepa> hr;
+		{
+			SizeList ll;
+			for (size_t j = 0; j < scale; j++)
+				for (size_t i = 0; i < hr0->size; i++)
+					ll.push_back(i);
+			hr = hrsel(ll.size(), ll.data(), *hr0);
+		}
 
 		EVAL(hr->dimension);
 		EVAL(hr->size);
@@ -361,9 +394,9 @@ int main(int argc, char **argv)
 		for (auto& record : *records)
 		{
 			double e = 0.0; 
-			for (std::size_t j = 0; j < z-1; j++)
+			for (std::size_t j = 0; j < z/scale-1; j++)
 				e += (record.d[j+1] - record.d[j])*(record.d[j+1] - record.d[j]);
-			e /= z-1;
+			e /= z/scale-1;
 			daily_error.push_back(std::sqrt(e));
 		}
 		std::vector<double> slice_error;
@@ -375,9 +408,9 @@ int main(int argc, char **argv)
 				double a = 0.0;
 				auto ll = slevs[evsl[j]];
 				for (auto k : ll)
-					a += record.d[k];
+					a += record.d[k % (z/scale)];
 				a /= ll.size();
-				e += (record.d[j] - a)*(record.d[j] - a);
+				e += (record.d[j % (z/scale)] - a)*(record.d[j % (z/scale)] - a);
 			}
 			e /= z;
 			slice_error.push_back(std::sqrt(e));

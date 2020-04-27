@@ -266,7 +266,37 @@ HOBBIES_2_148_WI_2_validation:  0.547398        0.688367        0.795212
 HOBBIES_2_149_WI_2_validation:  0.575687        0.658069        0.874812
 err: 0.821158
 ```
-We can speculate that 1913 *events* is too few for the *unsupervised model* to be very accurate without restricting to smaller *substrates* or adding further information such as calendar or holidays.
+We can speculate that 1913 *events* is too few for the *unsupervised model* to be very accurate without restricting to smaller *substrates* or adding further information such as calendar or holidays. Consider if simply *scaling* the *history* would improve matters. Here we repeat `model001` with ten times the *events*,
+```
+./main induce_category_store model007 FOODS CA_1 10 >model007.log
+
+./main model_error_category_store model007 FOODS CA_1 10
+hr->dimension: 1437
+hr->size: 19130
+treesSize(*dr->slices): 690
+treesLeafElements(*dr->slices)->size(): 564
+frder(*dr->fud)->size(): 564
+frund(*dr->fud)->size(): 285
+frvars(*dr->fud)->size(): 2415
+...
+err: 1.00975
+```
+There is little change. Now repeat `model003` with its `fmax` of 1914,
+```
+./main induce_category_store3 model008 FOODS CA_1 10 >model008.log
+
+./main model_error_category_store model008 FOODS CA_1 10
+hr->dimension: 1437
+hr->size: 19130
+treesSize(*dr->slices): 3690
+treesLeafElements(*dr->slices)->size(): 2657
+frder(*dr->fud)->size(): 2657
+frund(*dr->fud)->size(): 1241
+frvars(*dr->fud)->size(): 17322
+...
+err: 1.22374
+```
+Again, there is little change. Clearly most of the *alignments* relevant to prediction are already in the *model*.
 
 Regardless of an implied position that would be a long way down the [Kaggle leaderboard](https://www.kaggle.com/c/m5-forecasting-accuracy/leaderboard), we shall go on to consider constructing a time-wise set of *frames* with copies of the *induced model* in each *frame*. The *slice variables* of these *model applications* will then form the *substrate* of a *conditional model* where the label is the set of *slice variables* in the next *frame*. This *2-level model* then can be rolled daily to provide a *simulation* of the short term future.
 
