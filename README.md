@@ -266,7 +266,9 @@ HOBBIES_2_148_WI_2_validation:  0.547398        0.688367        0.795212
 HOBBIES_2_149_WI_2_validation:  0.575687        0.658069        0.874812
 err: 0.821158
 ```
-We can speculate that 1913 *events* is too few for the *unsupervised model* to be very accurate without restricting to smaller *substrates* or adding further information such as calendar or holidays. Consider if simply *scaling* the *history* would improve matters. Here we repeat `model001` with ten times the *events*,
+We can speculate that 1913 *events* is too few for the *unsupervised model* to be very accurate without restricting to smaller *substrates* or adding further information such as calendar or holidays. 
+
+Consider if simply *scaling* the *history* would improve matters. Here we repeat `model001` with ten times the *events*,
 ```
 ./main induce_category_store model007 FOODS CA_1 10 >model007.log
 
@@ -281,7 +283,7 @@ frvars(*dr->fud)->size(): 2415
 ...
 err: 1.00975
 ```
-There is little change. Now repeat `model003` with its `fmax` of 1914,
+There is little change, as we would expect for an `fmax` of 128. Now repeat `model003` with its `fmax` of 1914,
 ```
 ./main induce_category_store3 model008 FOODS CA_1 10 >model008.log
 
