@@ -435,48 +435,117 @@ int main(int argc, char **argv)
 		auto frvars = fudRepasSetVar;
 		auto frder = fudRepasDerived;
 		auto frund = fudRepasUnderlying;
+		auto drcopy = applicationRepasApplicationRepa_u;
+		auto drjoin = applicationRepaPairsJoin_u;
 		
 		string model = string(argv[2]);
 		string cat_id = string(argv[3]);
 		string store_id = string(argv[4]);
-		size_t dmult = argc >= 6 ? atoi(argv[5]) : 1;
+		size_t nmul = argc >= 6 ? atoi(argv[5]) : 1;
 
-		auto xx = trainBucketedCategoryStoreIO(10, cat_id, store_id);
-		auto& uu = std::get<0>(xx);
-		auto& ur = std::get<1>(xx);
-		auto& hr0 = std::get<2>(xx);
+		std::unique_ptr<HistoryRepa> hr;
+		{
+			auto xx = trainBucketedCategoryStoreIO(10, cat_id, store_id);
+			hr = std::move(std::get<2>(xx));
+		}
 
-		auto vv = *uvars(*uu);
+		std::unique_ptr<SystemRepa> ur;
+		std::unique_ptr<ApplicationRepa> dr;
+		{
+			StrVarPtrMap m;
+			std::ifstream in(model+".bin", std::ios::binary);
+			ur = persistentsSystemRepa(in, m);
+			dr = persistentsApplicationRepa(in);
+			in.close();
+		}
+		auto& llu = ur->listVarSizePair;
 		
-		// std::unique_ptr<HistoryRepa> hr;
-		// {
-			// SizeList ll;
-			// for (size_t j = 0; j < scale; j++)
-				// for (size_t i = 0; i < hr0->size; i++)
-					// ll.push_back(i);
-			// hr = hrsel(ll.size(), ll.data(), *hr0);
-		// }
+		auto ur1 = std::make_unique<SystemRepa>();
+		auto& llu1 = ur1->listVarSizePair;	
+		std::unique_ptr<HistoryRepa> hr1;
+		std::vector<std::shared_ptr<ApplicationRepa>> lld;
+		{
+			auto n = hr->dimension;
+			auto vv = hr->vectorVar;
+			auto z = hr->size;
+			HistoryRepaPtrList llh;
+			for (size_t k = 0; k < nmul; k++)
+			{
+				auto vk = std::make_shared<Variable>((int)k);
+				SizeSizeUMap nn;
+				nn.reserve(n);
+				for (std::size_t i = 0; i < n; i++)
+				{
+					auto x = vv[i];
+					auto& p = llu[x];
+					auto v = std::make_shared<Variable>(vk, p.first);
+					llu1.push_back(VarSizePair(v, p.second));
+					nn[x] = llu1.size() - 1;
+				}
+				SizeList ll;
+				for (size_t j = nmul-1-k; j < z-k; j++)
+					ll.push_back(j);
+				auto hr0 = hrsel(ll.size(), ll.data(), *hr);
+				hr0->reframe_u(nn);
+				llh.push_back(std::move(hr0));
+				auto dr0 = drcopy(*dr);
+				for (auto& ll : dr->fud->layers)
+					for (auto& tr : ll)
+					{
+						auto& p = llu[tr->derived];
+						auto vdfl = p.first->_var0;
+						auto vb = p.first->_var1;
+						auto vdf = vdfl->_var0;
+						auto vl = vdfl->_var1;
+						auto vf = vdf->_var1;
+						auto vdf1 = std::make_shared<Variable>(vk, vf);
+						auto vdfl1 = std::make_shared<Variable>(vdf1, vl);
+						auto vdflb1 = std::make_shared<Variable>(vdfl1, vb);
+						llu1.push_back(VarSizePair(vdflb1, p.second));
+						nn[tr->derived] = llu1.size() - 1;
+					}
+				dr0->reframe_u(nn);
+				lld.push_back(std::move(dr0));
+			}
+			hr1 = hrjoin(llh);
+		}
+		
+		EVAL(hr1->dimension);
+		EVAL(hr1->size);
+		
+		ApplicationRepa dr1;
+		{
+			dr1.slices = std::make_shared<SizeTree>();
+			dr1.slices->_list.reserve(dr->slices->_list.size() * nmul);
+			dr1.fud = std::make_shared<FudRepa>();
+			dr1.fud->layers.reserve(dr->fud->layers.size());
+			dr1.substrate.reserve(dr->substrate.size() * nmul);
+			for (auto& dr0 : lld)
+			{
+				dr1.slices->_list.insert(dr1.slices->_list.end(), dr0->slices->_list.begin(), dr0->slices->_list.end());
+				dr1.fud->layers.insert(dr1.fud->layers.end(), dr0->fud->layers.begin(), dr0->fud->layers.end());
+				dr1.substrate.insert(dr1.substrate.end(), dr0->substrate.begin(), dr0->substrate.end());
+			}
+		}
+		EVAL(treesSize(*dr1.slices));
+		EVAL(treesLeafElements(*dr1.slices)->size());
+		EVAL(frder(*dr1.fud)->size());
+		EVAL(frund(*dr1.fud)->size());
+		EVAL(frvars(*dr1.fud)->size());	
+		
+		auto hr2 = frmul(*hr1, *dr1.fud);
 
-		// EVAL(hr->dimension);
-		// EVAL(hr->size);
+		EVAL(hr2->dimension);
+		EVAL(hr2->size);
 
+		// auto vv = *uvars(*uu);
 		// auto& vvi = ur->mapVarSize();
 		// auto vv0 = sorted(vv);
 		// SizeList vv1;
 		// for (auto& v : vv0)
 			// vv1.push_back(vvi[v]);
 		
-		// StrVarPtrMap m;
-		// std::ifstream in(model+".bin", std::ios::binary);
-		// auto ur1 = persistentsSystemRepa(in, m);
-		// auto dr = persistentsApplicationRepa(in);
-		// in.close();
 
-		// EVAL(treesSize(*dr->slices));
-		// EVAL(treesLeafElements(*dr->slices)->size());
-		// EVAL(frder(*dr->fud)->size());
-		// EVAL(frund(*dr->fud)->size());
-		// EVAL(frvars(*dr->fud)->size());
 
 		// auto hr1 = frmul(*hr, *dr->fud);
 		// if (hr1->evient)
