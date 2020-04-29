@@ -426,7 +426,7 @@ int main(int argc, char **argv)
 		EVAL(err);
 	}
 	
-	if (argc >= 5 && string(argv[1]) == "condition_category_store")
+	if (argc >= 6 && string(argv[1]) == "condition_category_store")
 	{
 		auto uvars = systemsSetVar;
 		auto hrsel = eventsHistoryRepasHistoryRepaSelection_u;
@@ -437,11 +437,14 @@ int main(int argc, char **argv)
 		auto frund = fudRepasUnderlying;
 		auto drcopy = applicationRepasApplicationRepa_u;
 		auto drjoin = applicationRepaPairsJoin_u;
+		auto applicationer = parametersSystemsHistoryRepasApplicationerCondMultinomialMultiLabelFmaxIORepa_u;
 		
-		string model = string(argv[2]);
-		string cat_id = string(argv[3]);
-		string store_id = string(argv[4]);
-		size_t nmul = argc >= 6 ? atoi(argv[5]) : 1;
+		string modelin = string(argv[2]);
+		string model = string(argv[3]);
+		string cat_id = string(argv[4]);
+		string store_id = string(argv[5]);
+		size_t nmul = argc >= 7 ? atoi(argv[6]) : 1;
+		size_t fmax = argc >= 8 ? atoi(argv[7]) : 1;
 
 		std::unique_ptr<HistoryRepa> hr;
 		{
@@ -453,7 +456,7 @@ int main(int argc, char **argv)
 		std::unique_ptr<ApplicationRepa> dr;
 		{
 			StrVarPtrMap m;
-			std::ifstream in(model+".bin", std::ios::binary);
+			std::ifstream in(modelin+".bin", std::ios::binary);
 			ur = persistentsSystemRepa(in, m);
 			dr = persistentsApplicationRepa(in);
 			in.close();
@@ -537,73 +540,77 @@ int main(int argc, char **argv)
 
 		EVAL(hr2->dimension);
 		EVAL(hr2->size);
-
-		// auto vv = *uvars(*uu);
-		// auto& vvi = ur->mapVarSize();
-		// auto vv0 = sorted(vv);
-		// SizeList vv1;
-		// for (auto& v : vv0)
-			// vv1.push_back(vvi[v]);
 		
+		SizeList vvk;
+		{
+			for (std::size_t i = 1; i < lld.size(); i++)
+			{
+				auto sl = treesElements(*lld[i]->slices);
+				vvk.insert(vvk.end(), sl->begin(), sl->end());
+			}
+		}
+		SizeList vvl;
+		{
+			auto sl = treesLeafElements(*lld[0]->slices);
+			auto m = sl->size();
+			auto z = hr2->size;
+			auto& mvv2 = hr2->mapVarInt();
+			SizeList pvv2;
+			for (auto v : *sl)
+				pvv2.push_back(mvv2[v]);
+			auto hr3 = std::make_unique<HistoryRepa>();
+			std::size_t n3 = 2;
+			std::size_t s0 = (m-1)/256 + 1;
+			std::size_t s1 = m > 256 ? 256 : m;
+			llu1.push_back(VarSizePair(std::make_shared<Variable>("slices00"), s0));
+			llu1.push_back(VarSizePair(std::make_shared<Variable>("slices01"), s1));
+			std::size_t v0 = llu1.size() - 2;
+			std::size_t v1 = llu1.size() - 1;
+			vvl.push_back(v0);
+			vvl.push_back(v1);
+			hr3->dimension = n3;
+			hr3->vectorVar = new std::size_t[n3];
+			auto vv3 = hr3->vectorVar;
+			hr3->shape = new std::size_t[n3];
+			auto sh3 = hr3->shape;
+			vv3[0] = v0;
+			sh3[0] = s0;
+			vv3[1] = v1;
+			sh3[1] = s1;
+			hr3->size = z;
+			hr3->evient = false;
+			hr3->arr = new unsigned char[z*n3];
+			auto rr2 = hr2->arr;
+			auto rr3 = hr3->arr;
+			for (std::size_t j = 0; j < z; j++)
+				for (std::size_t i = 0; i < m; i++)
+				{
+					std::size_t u = rr2[pvv2[i]*z + j];
+					if (u)
+					{
+						rr3[j] = (unsigned char)(i/256);
+						rr3[z+j] = (unsigned char)(i%256);
+						break;
+					}
+				}
+			// EVAL(*hr3);
+			HistoryRepaPtrList llh;
+			llh.push_back(std::move(hr2));
+			llh.push_back(std::move(hr3));
+			hr2 = hrjoin(llh);
+		}
+	
+		auto dr2 = applicationer(fmax, vvk, vvl, *hr2, nmul+1, *ur1);
+		auto dr3 = drjoin(dr1, *dr2);
+		std::ofstream out(model+".bin", std::ios::binary);
+		systemRepasPersistent(*ur1, out); cout << endl;
+		applicationRepasPersistent(*dr3, out); cout << endl;
+		EVAL(treesSize(*dr3->slices));
+		EVAL(treesLeafElements(*dr3->slices)->size());
+		EVAL(frder(*dr3->fud)->size());
+		EVAL(frund(*dr3->fud)->size());
+		EVAL(frvars(*dr3->fud)->size());
 
-
-		// auto hr1 = frmul(*hr, *dr->fud);
-		// if (hr1->evient)
-			// hr1->transpose();
-		// auto z = hr1->size;
-		// auto& mvv = hr1->mapVarInt();
-		// auto sl = treesLeafElements(*dr->slices);
-		// std::map<std::size_t, SizeList> slevs;
-		// std::vector<std::size_t> evsl;
-		// evsl.reserve(z);
-		// for (auto s : *sl)
-		// {
-			// auto pk = mvv[s];
-			// for (std::size_t j = 0; j < z; j++)
-			// {
-				// std::size_t u = hr1->arr[pk*z + j];
-				// if (u)
-				// {
-					// slevs[s].push_back(j);
-					// evsl.push_back(s);
-				// }
-			// }
-		// }
-// //		EVAL(slevs);
-// //		EVAL(evsl);
-		// std::vector<double> daily_error;
-		// for (auto& record : *records)
-		// {
-			// double e = 0.0; 
-			// for (std::size_t j = 0; j < z/scale-1; j++)
-				// e += (record.d[j+1] - record.d[j])*(record.d[j+1] - record.d[j]);
-			// e /= z/scale-1;
-			// daily_error.push_back(std::sqrt(e));
-		// }
-		// std::vector<double> slice_error;
-		// for (auto& record : *records)
-		// {
-			// double e = 0.0; 
-			// for (std::size_t j = 0; j < z; j++)
-			// {
-				// double a = 0.0;
-				// auto ll = slevs[evsl[j]];
-				// for (auto k : ll)
-					// a += record.d[k % (z/scale)];
-				// a /= ll.size();
-				// e += (record.d[j % (z/scale)] - a)*(record.d[j % (z/scale)] - a);
-			// }
-			// e /= z;
-			// slice_error.push_back(std::sqrt(e));
-		// }
-		// auto err = 0.0;
-		// for (std::size_t i = 0; i < records->size(); i++)
-		// {
-			// std::cout << (*records)[i].id << ":\t" << slice_error[i] << "\t" << daily_error[i] << "\t" << slice_error[i]/daily_error[i] << std::endl;
-			// err += slice_error[i]/daily_error[i];
-		// }
-		// err /= records->size();
-		// EVAL(err);
 	}
 
 	return 0;
