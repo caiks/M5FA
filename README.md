@@ -555,4 +555,4 @@ entropy variable: <<<1,9>,s>,1>
 fud slice cardinality: 2
 <<< transer 1.58e-05s
 ```
-If we take the effective *slices* to be 433 that suggests around 4.4 *events* per *slice*.
+If we take the predictive *slices* to be 433 that suggests around 4.4 *events* per *slice*.
