@@ -300,6 +300,259 @@ err: 1.22374
 ```
 Again, there is little change. Clearly most of the *alignments* relevant to prediction are already in the *model*.
 
-Regardless of an implied position that would be a long way down the [Kaggle leaderboard](https://www.kaggle.com/c/m5-forecasting-accuracy/leaderboard), we shall go on to consider constructing a time-wise set of *frames* with copies of the *induced model* in each *frame*. The *slice variables* of these *model applications* will then form the *substrate* of a *conditional model* where the label is the set of *slice variables* in the next *frame*. This *2-level model* then can be rolled daily to provide a *simulation* of the short term future.
+Regardless of an implied position that would be a long way down the [Kaggle leaderboard](https://www.kaggle.com/c/m5-forecasting-accuracy/leaderboard), we shall go on to consider constructing a time-wise set of past *frames* with copies of the *induced model* in each *frame*. The *slice variables* of these *model applications* will then form the *substrate* of a *conditioned model* where the label is the set of *slice variables* in the current *frame*. If desired, this *2-level model* then could be rolled *frame* by *frame* to provide a *simulation* of the short term future.
 
+The `condition_category_store` process constructs time-wise *frames* from successive *events* and copies the given *model* to each *frame*. In the example below 10 *frames* are constructed, the current *frame* and 9 past *frames*. Then it runs the *multinomial conditioner* for 512 *fuds* in a second *level* where the *underlying level* consists of the *leaf slices* of just the 9 past *frames*. The label is a *partition variable* of *valency* equal to the cardinality of *leaf slices* of the current *frame*. It then saves the resultant *model* joined with the *underlying level*,
+```
+./main condition_category_store model001 model009 FOODS CA_1 10 512 >model009.log
+hr1->dimension: 14370
+hr1->size: 1904
+treesSize(*dr1.slices): 6410
+treesLeafElements(*dr1.slices)->size(): 5150
+frder(*dr1.fud)->size(): 5150
+frund(*dr1.fud)->size(): 3110
+frvars(*dr1.fud)->size(): 28780
+hr2->dimension: 40040
+hr2->size: 1904
+>>> applicationer
+>>> searcher 
+<<< searcher 0.0623936s
+>>> transer 
+fud: 1
+fud slice size: 1904
+sized entropy label : 10236.9
+sized conditional entropy: 9528.73
+sized entropy decrease: 708.218
+entropy variable: <<<1,2>,s>,10>
+<<< transer 2.11e-05s
+...
+>>> slicer 
+slice size: 5
+slice variable: <<<11,305>,s>,1>
+<<< slicer 0.0021237s
+>>> searcher 
+<<< searcher 0.040869s
+>>> transer 
+fud: 512
+fud slice size: 5
+sized entropy label : 4.78749
+sized conditional entropy: 2.48491
+sized entropy decrease: 2.30259
+entropy variable: <<<1,3>,s>,9>
+fud slice cardinality: 2
+<<< transer 1.5e-05s
+<<< applicationer 23.0629s
+treesSize(*dr3->slices): 1024
+treesLeafElements(*dr3->slices)->size(): 513
+frder(*dr3->fud)->size(): 513
+frund(*dr3->fud)->size(): 490
+frvars(*dr3->fud)->size(): 4085
+```
+Over the 512 *fuds* the *label entropy* is reduced from 10236.9 to 4.78749, with the last *slice size* of 5 *events*. Let us increase the `fmax` to completely resolve the label,
+```
+./main condition_category_store model001 model010 FOODS CA_1 10 2048 >model010.log
+>>> transer 
+...
+fud: 1
+fud slice size: 1904
+sized entropy label : 10236.9
+sized conditional entropy: 9528.73
+sized entropy decrease: 708.218
+entropy variable: <<<1,2>,s>,10>
+<<< transer 1.83e-05s
+...
+>>> slicer 
+slice size: 2
+slice variable: <<<11,407>,s>,2>
+<<< slicer 0.0047459s
+>>> searcher 
+<<< searcher 0.0039961s
+>>> transer 
+fud: 1718
+fud slice size: 2
+sized entropy label : 0.693147
+sized conditional entropy: 0
+sized entropy decrease: 0.693147
+entropy variable: <<<1,115>,s>,2>
+fud slice cardinality: 2
+<<< transer 1.82e-05s
+treesSize(*dr3->slices): 3436
+treesLeafElements(*dr3->slices)->size(): 1719
+frder(*dr3->fud)->size(): 1719
+frund(*dr3->fud)->size(): 797
+frvars(*dr3->fud)->size(): 8913
+```
+The *conditioner* requires 1719 leaf nodes to completely *partition* 1904 *events*, i.e. around 1.1 *events* per *slice*. So it does not seem to be very predictive with 9 past *frames*.
 
+Now compare the process with `model002` as the *underlying model* instead of `model001`,
+```
+./main condition_category_store model002 model011 FOODS CA_1 10 2048 >model011.log
+hr1->dimension: 14370
+hr1->size: 1904
+treesSize(*dr1.slices): 5150
+treesLeafElements(*dr1.slices)->size(): 3890
+frder(*dr1.fud)->size(): 3890
+frund(*dr1.fud)->size(): 3720
+frvars(*dr1.fud)->size(): 37190
+hr2->dimension: 47840
+hr2->size: 1904
+>>> applicationer
+>>> searcher 
+<<< searcher 0.0435397s
+>>> transer 
+fud: 1
+fud slice size: 1904
+sized entropy label : 9571.59
+sized conditional entropy: 8397.02
+sized entropy decrease: 1174.57
+entropy variable: <<<1,3>,s>,10>
+<<< transer 1.81e-05s
+...
+>>> slicer 
+slice size: 2
+slice variable: <<<11,193>,s>,2>
+<<< slicer 0.0026758s
+>>> searcher 
+<<< searcher 0.0026168s
+>>> transer 
+fud: 1280
+fud slice size: 2
+sized entropy label : 0.693147
+sized conditional entropy: 0
+sized entropy decrease: 0.693147
+entropy variable: <<<2,38>,s>,2>
+fud slice cardinality: 2
+<<< transer 1.41e-05s
+>>> slicer 
+no slices
+<<< applicationer 22.9586s
+treesSize(*dr3->slices): 2560
+treesLeafElements(*dr3->slices)->size(): 1281
+frder(*dr3->fud)->size(): 1281
+frund(*dr3->fud)->size(): 2307
+frvars(*dr3->fud)->size(): 20779
+```
+This requires 1281 leaf nodes to completely partition 1904 *events*, i.e. 1.5 *events* per *slice*. This is because `model001` has 515 `leaf slices` versus only 389 in `model002`, which means that the starting *label entropy* is lower at 9571.59. The initial decrease is also greater. `model002` has a larger *underlying* and longer *implied diagonal* so it is a more *likely model* than `model001`. The *unsupervised alignments* are more *aligned* with the *label variable*. 
+
+Now consider if 20 *frames* improves the *accuracy*,
+```
+./main condition_category_store model002 model012 FOODS CA_1 20 2048 >model012.log
+hr1->dimension: 28740
+hr1->size: 1894
+treesSize(*dr1.slices): 10300
+treesLeafElements(*dr1.slices)->size(): 7780
+frder(*dr1.fud)->size(): 7780
+frund(*dr1.fud)->size(): 7440
+frvars(*dr1.fud)->size(): 74380
+hr2->dimension: 95680
+hr2->size: 1894
+>>> applicationer
+>>> searcher 
+<<< searcher 0.0923371s
+>>> transer 
+fud: 1
+fud slice size: 1894
+sized entropy label : 9520.76
+sized conditional entropy: 8350.58
+sized entropy decrease: 1170.18
+entropy variable: <<<1,3>,s>,10>
+<<< transer 0.0240461s
+...
+>>> slicer 
+slice size: 2
+slice variable: <<<21,282>,s>,2>
+<<< slicer 0.0022175s
+>>> searcher 
+<<< searcher 0.0023998s
+>>> transer 
+fud: 1175
+fud slice size: 2
+sized entropy label : 0.693147
+sized conditional entropy: 0
+sized entropy decrease: 0.693147
+entropy variable: <<<2,38>,s>,2>
+fud slice cardinality: 2
+<<< transer 1.45e-05s
+>>> slicer 
+no slices
+<<< applicationer 39.2629s
+treesSize(*dr3->slices): 2350
+treesLeafElements(*dr3->slices)->size(): 1176
+frder(*dr3->fud)->size(): 1176
+frund(*dr3->fud)->size(): 3325
+frvars(*dr3->fud)->size(): 26046
+```
+With 20 *frames* there is a further improvement to 1176 *slices*, i.e. to 1.6 *events* per *slice*.
+
+Now consider which *slices* of the *underlying level* are chosen as the *conditioned model tree* is constructed. As we would expect the first nodes tend to copy the previous day's *slice tree*, until *fud* 8 which then accesses the second day in the past, *frame* 2,
+```
+>>> slicer 
+slice size: 298
+slice variable: <<<21,5>,s>,2>
+<<< slicer 4.16e-05s
+>>> searcher 
+<<< searcher 0.0515161s
+>>> transer 
+fud: 8
+fud slice size: 298
+sized entropy label : 1098.16
+sized conditional entropy: 986.513
+sized entropy decrease: 111.646
+entropy variable: <<<2,9>,s>,6>
+fud slice cardinality: 2
+<<< transer 1.6e-05s
+```
+It is not until *fud* 62 that *frame* 1 is no longer used much,
+```
+>>> slicer 
+slice size: 52
+slice variable: <<<21,43>,s>,1>
+<<< slicer 0.0002215s
+>>> searcher 
+<<< searcher 0.0477149s
+>>> transer 
+fud: 62
+fud slice size: 52
+sized entropy label : 98.0634
+sized conditional entropy: 81.3265
+sized entropy decrease: 16.7369
+entropy variable: <<<17,35>,s>,2>
+fud slice cardinality: 2
+<<< transer 1.87e-05s
+```
+From this point on the *slices* seem to be taken from all of the *frames* uniformly, so perhaps it is here that time-wise periodic *alignments* with the label become visible.
+
+From *fud* 433 there is a drop in the *slice size* from 16 to 5. Thereafter, the *slices* tend to come from the first *frame* suggesting that they are more randomly chosen and have little predictive quality,
+```
+>>> slicer 
+slice size: 16
+slice variable: <<<21,106>,s>,2>
+<<< slicer 0.0014706s
+>>> searcher 
+<<< searcher 0.0492072s
+>>> transer 
+fud: 432
+fud slice size: 16
+sized entropy label : 4.78749
+sized conditional entropy: 2.70805
+sized entropy decrease: 2.07944
+entropy variable: <<<7,23>,s>,1>
+fud slice cardinality: 2
+<<< transer 1.72e-05s
+>>> slicer 
+slice size: 5
+slice variable: <<<21,283>,s>,1>
+<<< slicer 0.001409s
+>>> searcher 
+<<< searcher 0.049314s
+>>> transer 
+fud: 433
+fud slice size: 5
+sized entropy label : 4.78749
+sized conditional entropy: 2.48491
+sized entropy decrease: 2.30259
+entropy variable: <<<1,9>,s>,1>
+fud slice cardinality: 2
+<<< transer 1.58e-05s
+```
+If we take the effective *slices* to be 433 that suggests around 4.4 *events* per *slice*.
