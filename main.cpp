@@ -613,11 +613,13 @@ int main(int argc, char **argv)
 
 	}
 	
-		if (argc >= 5 && string(argv[1]) == "entropy")
+	if (argc >= 5 && string(argv[1]) == "entropy")
 	{
 		auto uvars = systemsSetVar;
 		auto uruu = systemsRepasSystem;
 		auto aall = histogramsList;
+		auto size = histogramsSize;
+		auto trim = histogramsTrim;
 		auto add = pairHistogramsAdd_u;
 		auto ent = histogramsEntropy;
 		auto araa = systemsHistogramRepasHistogram_u;
@@ -678,7 +680,9 @@ int main(int argc, char **argv)
 		uruu(*ur, *uu);
 		// EVAL(*uu);
 		auto aa = araa(*uu, *ur, *hrred(*hrp, *ur, VarList{ Variable("partition0"), Variable("partition1") }));
-		// EVAL(*aa);
+	    // EVAL(*aa);
+		// EVAL(size(*aa));
+		EVAL(*trim(*aa));
 		EVAL(ent(*aa));
 		EVAL(ent(*aa) * z);
 		EVAL((1.0-exp(ent(*aa))/d)*100.0);
@@ -691,12 +695,155 @@ int main(int argc, char **argv)
 		
 		auto hrsp = hrpart(*hrs, *dr, *ur);
 		auto bb = araa(*uu, *ur, *hrred(*hrsp, *ur, VarList{ Variable("partition0"), Variable("partition1") }));
+		// EVAL(size(*bb));
+		EVAL(*trim(*bb));
 		EVAL(ent(*bb));
 		EVAL(ent(*bb) * v);
 		EVAL((1.0-exp(ent(*bb))/d)*100.0);
 		
 		auto cc = add(*aa,*bb);
 		
+		EVAL(*trim(*cc));
+		EVAL(ent(*cc));
+		EVAL(ent(*cc) * (z+v));
+		EVAL((1.0-exp(ent(*cc))/d)*100.0);
+		
+		EVAL((ent(*cc) * (z+v) - ent(*aa) * z - ent(*bb) * v)/z);
+		EVAL(ent(*cc) * (z+v) - ent(*aa) * z - ent(*bb) * v);
+		EVAL(exp((ent(*cc) * (z+v) - ent(*aa) * z - ent(*bb) * v)/z)/d*100.0);
+	}
+	
+	if (argc >= 5 && string(argv[1]) == "entropy_timewise")
+	{
+		auto uvars = systemsSetVar;
+		auto uruu = systemsRepasSystem;
+		auto aall = histogramsList;
+		auto size = histogramsSize;
+		auto trim = histogramsTrim;
+		auto add = pairHistogramsAdd_u;
+		auto ent = histogramsEntropy;
+		auto araa = systemsHistogramRepasHistogram_u;
+		auto hrsel = eventsHistoryRepasHistoryRepaSelection_u;
+		auto hrjoin = vectorHistoryRepasJoin_u;
+		auto hrred = [](const HistoryRepa& hr, const SystemRepa& ur, const VarList& kk)
+		{
+			auto& vvi = ur.mapVarSize();
+			std::size_t m = kk.size();
+			SizeList kk1;
+			for (std::size_t i = 0; i < m; i++)
+				kk1.push_back(vvi[kk[i]]);
+			return setVarsHistoryRepasReduce_u(1.0, m, kk1.data(), hr);
+		};
+		auto hrconcat = vectorHistoryRepasConcat_u;
+		auto hrshuffle = historyRepasShuffle_u;
+		auto hrpart = systemsHistoryRepasApplicationsHistoryHistoryPartitionedRepa_u;
+		auto frvars = fudRepasSetVar;
+		auto frder = fudRepasDerived;
+		auto frund = fudRepasUnderlying;
+		
+		string model = string(argv[2]);
+		string cat_id = string(argv[3]);
+		string store_id = string(argv[4]);
+		size_t nmul = argc >= 6 ? atoi(argv[5]) : 1;
+		size_t mult = argc >= 7 ? atoi(argv[6]) : 1;
+		
+		EVAL(model);
+		EVAL(mult);
+
+		std::unique_ptr<System> uu;
+		std::unique_ptr<SystemRepa> ur;
+		std::unique_ptr<HistoryRepa> hr;
+		{
+			auto xx = trainBucketedCategoryStoreIO(10, cat_id, store_id);
+			uu = std::move(std::get<0>(xx));
+			ur = std::move(std::get<1>(xx));
+			hr = std::move(std::get<2>(xx));
+		}
+		
+		HistoryRepaPtrList qq;
+		qq.reserve(mult);
+		for (std::size_t i = 1; i <= mult; i++)
+			qq.push_back(hrshuffle(*hr, (unsigned int)(12345+i)));
+		auto hrs = hrconcat(qq);
+		
+		auto& llu = ur->listVarSizePair;
+		auto ur1 = std::make_unique<SystemRepa>();
+		auto& llu1 = ur1->listVarSizePair;	
+		{
+			auto n = hr->dimension;
+			auto vv = hr->vectorVar;
+			auto z = hr->size;
+			HistoryRepaPtrList llh;
+			HistoryRepaPtrList llhs;
+			for (size_t k = 0; k < nmul; k++)
+			{
+				auto vk = std::make_shared<Variable>((int)k);
+				SizeSizeUMap nn;
+				nn.reserve(n);
+				for (std::size_t i = 0; i < n; i++)
+				{
+					auto x = vv[i];
+					auto& p = llu[x];
+					auto v = std::make_shared<Variable>(vk, p.first);
+					llu1.push_back(VarSizePair(v, p.second));
+					nn[x] = llu1.size() - 1;
+				}
+				SizeList ll;
+				for (size_t j = nmul-1-k; j < z-k; j++)
+					ll.push_back(j);
+				auto hr0 = hrsel(ll.size(), ll.data(), *hr);
+				hr0->reframe_u(nn);
+				llh.push_back(std::move(hr0));
+				hr0 = hrsel(ll.size(), ll.data(), *hrs);
+				hr0->reframe_u(nn);
+				llhs.push_back(std::move(hr0));
+
+			}
+			hr = hrjoin(llh);
+			hrs = hrjoin(llhs);
+		}
+
+		ECHO(double z = hr->size);
+		EVAL(z);
+		ECHO(double v = z * mult);
+		EVAL(v);
+		
+		StrVarPtrMap m;
+		std::ifstream in(model + ".bin", std::ios::binary);
+		auto ur2 = persistentsSystemRepa(in, m);
+		auto dr = persistentsApplicationRepa(in);
+		in.close();
+
+		EVAL(fudRepasSize(*dr->fud));
+		EVAL(frder(*dr->fud)->size());
+		EVAL(frund(*dr->fud)->size());
+		EVAL(treesSize(*dr->slices));
+		ECHO(auto d = treesLeafElements(*dr->slices)->size());
+		EVAL(d);
+
+		auto hrp = hrpart(*hr, *dr, *ur1);
+		// EVAL(*hrp);
+		uruu(*ur1, *uu);
+		// EVAL(*uu);
+		auto aa = araa(*uu, *ur1, *hrred(*hrp, *ur1, VarList{ Variable("partition0"), Variable("partition1") }));
+	    // EVAL(*aa);
+		// EVAL(size(*aa));
+		// EVAL(*trim(*aa));
+		EVAL(ent(*aa));
+		EVAL(ent(*aa) * z);
+		EVAL((1.0-exp(ent(*aa))/d)*100.0);
+		
+		auto hrsp = hrpart(*hrs, *dr, *ur1);
+		auto bb = araa(*uu, *ur1, *hrred(*hrsp, *ur1, VarList{ Variable("partition0"), Variable("partition1") }));
+		// EVAL(size(*bb));
+		// EVAL(*trim(*bb));
+		EVAL(ent(*bb));
+		EVAL(ent(*bb) * v);
+		EVAL((1.0-exp(ent(*bb))/d)*100.0);
+		
+		auto cc = add(*aa,*bb);
+		
+		// EVAL(*trim(*cc));
 		EVAL(ent(*cc));
 		EVAL(ent(*cc) * (z+v));
 		EVAL((1.0-exp(ent(*cc))/d)*100.0);
